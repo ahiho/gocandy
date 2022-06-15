@@ -7,6 +7,16 @@ import (
 	"strconv"
 )
 
+// Get retrieves the value of the environment variable named key. It returns fallback string if the variable is not present.
+func Get(key string, fallback string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		return fallback
+	}
+
+	return val
+}
+
 // MustGet retrieves the value of the environment variable named key. It panics if the variable is not present.
 func MustGet(key string) string {
 	val := os.Getenv(key)
