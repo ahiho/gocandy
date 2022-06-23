@@ -7,6 +7,17 @@ import (
 	"strconv"
 )
 
+// Custom action when have panic happen
+var FatalHandler func(interface{})
+
+func doPanic(v interface{}) {
+	if FatalHandler != nil {
+		FatalHandler(v)
+	} else {
+		panic(v)
+	}
+}
+
 // Get retrieves the value of the environment variable named key. It returns fallback string if the variable is not present.
 func Get(key string, fallback string) string {
 	val := os.Getenv(key)
@@ -17,11 +28,12 @@ func Get(key string, fallback string) string {
 	return val
 }
 
-// MustGet retrieves the value of the environment variable named key. It panics if the variable is not present.
+// MustGet retrieves the value of the environment variable named key. By default it panics if the variable is not present.
+// use `env.FatalHandler` if you wanna use custom handler, such as send to logstash before panic.
 func MustGet(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
-		panic(fmt.Sprint("Required environment variable not set: ", key))
+		doPanic(fmt.Sprint("Required environment variable not set: ", key))
 	}
 
 	return val
