@@ -28,7 +28,7 @@ func Get(key string, fallback string) string {
 }
 
 // MustGet retrieves the value of the environment variable named key. By default it panics if the variable is not present.
-// use `env.FatalHandler` if you wanna use custom handler, such as send to logstash before panic.
+// use `env.PanicHandler` if you wanna implement a custom handler, e.g. send a log to Logstash before panic.
 func MustGet(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
