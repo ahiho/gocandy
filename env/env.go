@@ -13,9 +13,8 @@ var FatalHandler func(interface{})
 func doPanic(v interface{}) {
 	if FatalHandler != nil {
 		FatalHandler(v)
-	} else {
-		panic(v)
 	}
+	panic(v)
 }
 
 // Get retrieves the value of the environment variable named key. It returns fallback string if the variable is not present.
