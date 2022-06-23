@@ -7,8 +7,8 @@ import (
 	"strconv"
 )
 
-// Custom action when have panic happen
-var FatalHandler func(interface{})
+// PanicHandler is a custom action when panic happens.
+var PanicHandler func(interface{})
 
 func doPanic(v interface{}) {
 	if FatalHandler != nil {
