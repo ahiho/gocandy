@@ -1,0 +1,10 @@
+github.com/ahiho/gocandy/gormx/model v0.0.0-20220629084805-060f045d9f33 h1:hVBofwDLCCsFV/H3p6BuVdQDVYazDRbHoZOUKOT01UM=
+github.com/ahiho/gocandy/gormx/model v0.0.0-20220629084805-060f045d9f33/go.mod h1:tlfhbA1X0Kke/TynS0t/5CREqcRsEsLMIANcDBypVg0=
+github.com/ahiho/gocandy/listing v0.0.0-20220629084805-060f045d9f33 h1:TUF8H8wIybJeBixkrhp4FIzzqDrqAlC6H0i7cgD1J0w=
+github.com/ahiho/gocandy/listing v0.0.0-20220629084805-060f045d9f33/go.mod h1:r57AB2O+jvxKIlAZX+upCiUcHrD3/b2I9VZIidkbIis=
+github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
+github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
+github.com/jinzhu/now v1.1.4 h1:tHnRBy1i5F2Dh8BAFxqFzxKqqvezXrL2OW1TnX+Mlas=
+github.com/jinzhu/now v1.1.4/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=
+gorm.io/gorm v1.23.7 h1:ww+9Mu5WwHKDSOQZFC4ipu/sgpKMr9EtrJ0uwBqNtB0=
+gorm.io/gorm v1.23.7/go.mod h1:l2lP/RyAtc1ynaTjFksBde/O8v9oOGIApu2/xRitmZk=
