@@ -21,21 +21,21 @@ func TestParse(t *testing.T) {
 		{
 			name: "1 field contain condition",
 			args: args{
-				input: "name : \"abc\"",
+				input: "firstName : \"abc\"",
 			},
 			want: &Filter{
-				Conditions: []Condition{{Field: "name", Not: false, Op: OpContains, Values: []interface{}{"abc"}}},
+				Conditions: []Condition{{Field: "firstName", Not: false, Op: OpContains, Values: []interface{}{"abc"}}},
 			},
 			wantErr: false,
 		},
 		{
 			name: "2 fields contain condition",
 			args: args{
-				input: "name : \"abc\" type = 1.2",
+				input: "firstName : \"abc\" type = 1.2",
 			},
 			want: &Filter{
 				Conditions: []Condition{
-					{Field: "name", Not: false, Op: OpContains, Values: []interface{}{"abc"}},
+					{Field: "firstName", Not: false, Op: OpContains, Values: []interface{}{"abc"}},
 					{Field: "type", Not: false, Op: OpEqual, Values: []interface{}{1.2}},
 				},
 			},
@@ -44,11 +44,11 @@ func TestParse(t *testing.T) {
 		{
 			name: "2 fields with one field is integer",
 			args: args{
-				input: "name : \"abc\" type = 1",
+				input: "firstName : \"abc\" type = 1",
 			},
 			want: &Filter{
 				Conditions: []Condition{
-					{Field: "name", Not: false, Op: OpContains, Values: []interface{}{"abc"}},
+					{Field: "firstName", Not: false, Op: OpContains, Values: []interface{}{"abc"}},
 					{Field: "type", Not: false, Op: OpEqual, Values: []interface{}{a}},
 				},
 			},
@@ -57,11 +57,11 @@ func TestParse(t *testing.T) {
 		{
 			name: "2 fields with IN filter",
 			args: args{
-				input: "name : \"abc\" type IN (1, 2)",
+				input: "firstName : \"abc\" type IN (1, 2)",
 			},
 			want: &Filter{
 				Conditions: []Condition{
-					{Field: "name", Not: false, Op: OpContains, Values: []interface{}{"abc"}},
+					{Field: "firstName", Not: false, Op: OpContains, Values: []interface{}{"abc"}},
 					{Field: "type", Not: false, Op: OpIn, Values: []interface{}{a, b}},
 				},
 			},
@@ -70,11 +70,11 @@ func TestParse(t *testing.T) {
 		{
 			name: "2 fields with range filter",
 			args: args{
-				input: "name : \"abc\" type :[1,2]",
+				input: "firstName : \"abc\" type :[1,2]",
 			},
 			want: &Filter{
 				Conditions: []Condition{
-					{Field: "name", Not: false, Op: OpContains, Values: []interface{}{"abc"}},
+					{Field: "firstName", Not: false, Op: OpContains, Values: []interface{}{"abc"}},
 					{Field: "type", Not: false, Op: OpRange, Values: []interface{}{a, b}},
 				},
 			},
@@ -83,7 +83,7 @@ func TestParse(t *testing.T) {
 		{
 			name: "wrong input",
 			args: args{
-				input: "name : \"abc\" type [] 1",
+				input: "firstName : \"abc\" type [] 1",
 			},
 			want:    nil,
 			wantErr: true,

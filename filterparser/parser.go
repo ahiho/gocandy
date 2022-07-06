@@ -29,12 +29,12 @@ type Filter struct {
 func Parse(input string) (*Filter, error) {
 	e := internal.Expression{}
 	if err := internal.Parse(input, &e); err != nil {
-		return nil, fmt.Errorf("parse: %v", err)
+		return nil, fmt.Errorf("parse: %w", err)
 	}
 
 	filter, err := convert(e)
 	if err != nil {
-		return nil, fmt.Errorf("convert: %v", err)
+		return nil, fmt.Errorf("convert: %w", err)
 	}
 
 	return filter, nil

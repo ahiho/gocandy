@@ -11,7 +11,7 @@ import (
 func Transform(filter fp.Filter, rules validator.Rules) error {
 	for i := range filter.Conditions {
 		if err := transformSingle(&filter.Conditions[i], rules); err != nil {
-			return fmt.Errorf("condition #%d: %v", i+1, err)
+			return fmt.Errorf("condition #%d: %w", i+1, err)
 		}
 	}
 
@@ -25,15 +25,14 @@ func transformSingle(cond *fp.Condition, rules validator.Rules) error {
 	}
 
 	if err := interpretTypes(cond, field); err != nil {
-		return fmt.Errorf("field: %q: interpret types: %v", cond.Field, err)
+		return fmt.Errorf("field: %q: interpret types: %w", cond.Field, err)
 	}
 
 	return nil
 }
 
 func interpretTypes(cond *fp.Condition, field validator.Field) error {
-	switch field.Type {
-	case fp.TypeTimestamp:
+	if field.Type == fp.TypeTimestamp {
 		for i, curr := range cond.Values {
 			s, ok := curr.(string)
 			if !ok {
@@ -42,7 +41,7 @@ func interpretTypes(cond *fp.Condition, field validator.Field) error {
 			t, err := time.Parse(time.RFC3339, s)
 			if err != nil {
 				// err.Error() returns the value, we don't need to
-				return fmt.Errorf("timestamp: value #%d: %v", i+1, err)
+				return fmt.Errorf("timestamp: value #%d: %w", i+1, err)
 			}
 			cond.Values[i] = t
 		}

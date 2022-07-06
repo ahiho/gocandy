@@ -77,7 +77,7 @@ func TestRules_Field(t *testing.T) {
 		{
 			name: "invalid key",
 			fields: fields{
-				Fields: map[string]Field{"name": {Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}}, "name_th": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
+				Fields: map[string]Field{"firstName": {Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}}, "lastName": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
 			},
 			args: args{
 				key: "a",
@@ -88,10 +88,10 @@ func TestRules_Field(t *testing.T) {
 		{
 			name: "If the input is NOT a nested field name, the top level field must NOT be a map",
 			fields: fields{
-				Fields: map[string]Field{"name": {Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}}, "name_th": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
+				Fields: map[string]Field{"firstName": {Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}}, "lastName": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
 			},
 			args: args{
-				key: "name",
+				key: "firstName",
 			},
 			want:  Field{Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}},
 			want1: false,
@@ -99,10 +99,10 @@ func TestRules_Field(t *testing.T) {
 		{
 			name: "key without dot character",
 			fields: fields{
-				Fields: map[string]Field{"name": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}, "name_th": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
+				Fields: map[string]Field{"firstName": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}, "lastName": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
 			},
 			args: args{
-				key: "name",
+				key: "firstName",
 			},
 			want:  Field{Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}},
 			want1: true,
@@ -110,10 +110,10 @@ func TestRules_Field(t *testing.T) {
 		{
 			name: "key with dot character",
 			fields: fields{
-				Fields: map[string]Field{"name": {Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}}, "name_th": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
+				Fields: map[string]Field{"firstName": {Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}}, "lastName": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
 			},
 			args: args{
-				key: "name.us",
+				key: "firstName.us",
 			},
 			want:  Field{Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}},
 			want1: true,
@@ -121,10 +121,10 @@ func TestRules_Field(t *testing.T) {
 		{
 			name: "key with multiple dots character",
 			fields: fields{
-				Fields: map[string]Field{"name": {Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}}, "name_th": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
+				Fields: map[string]Field{"firstName": {Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}}, "lastName": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
 			},
 			args: args{
-				key: "name.us.abc",
+				key: "firstName.us.abc",
 			},
 			want:  Field{Type: fp.TypeBool, Container: fp.ContainerMap, Operators: Operators{fp.OpEqual}},
 			want1: true,
@@ -162,11 +162,11 @@ func TestRules_Validate(t *testing.T) {
 		{
 			name: "validate a valid filer",
 			fields: fields{
-				Fields: map[string]Field{"name": {Type: fp.TypeString, Container: fp.ContainerNone, Operators: Operators{fp.OpEqual}}, "name_th": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
+				Fields: map[string]Field{"firstName": {Type: fp.TypeString, Container: fp.ContainerNone, Operators: Operators{fp.OpEqual}}, "lastName": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
 			},
 			args: args{
 				f: fp.Filter{Conditions: []fp.Condition{{
-					Field: "name",
+					Field: "firstName",
 					Not:   false,
 					Op:    fp.OpEqual,
 					Values: []interface{}{
@@ -179,11 +179,11 @@ func TestRules_Validate(t *testing.T) {
 		{
 			name: "validate an invalid filer",
 			fields: fields{
-				Fields: map[string]Field{"name": {Type: fp.TypeString, Container: fp.ContainerNone, Operators: Operators{fp.OpEqual}}, "name_th": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
+				Fields: map[string]Field{"firstName": {Type: fp.TypeString, Container: fp.ContainerNone, Operators: Operators{fp.OpEqual}}, "lastName": {Type: fp.TypeBool, Container: fp.ContainerArray, Operators: Operators{fp.OpEqual}}},
 			},
 			args: args{
 				f: fp.Filter{Conditions: []fp.Condition{{
-					Field: "name",
+					Field: "firstName",
 					Not:   false,
 					Op:    fp.OpGreater,
 					Values: []interface{}{
@@ -280,7 +280,7 @@ func Test_validateValue(t *testing.T) {
 		{
 			name: "validate uint",
 			args: args{
-				c:     fp.Condition{Not: false, Values: []interface{}{"abc"}, Field: "name"},
+				c:     fp.Condition{Not: false, Values: []interface{}{"abc"}, Field: "firstName"},
 				field: Field{Type: fp.TypeUInt, Container: fp.ContainerNone, Operators: []fp.Operator{fp.OpEqual}},
 			},
 			wantErr: true,
@@ -288,7 +288,7 @@ func Test_validateValue(t *testing.T) {
 		{
 			name: "validate int",
 			args: args{
-				c:     fp.Condition{Not: false, Values: []interface{}{1.2}, Field: "name"},
+				c:     fp.Condition{Not: false, Values: []interface{}{1.2}, Field: "firstName"},
 				field: Field{Type: fp.TypeInt, Container: fp.ContainerNone, Operators: []fp.Operator{fp.OpEqual}},
 			},
 			wantErr: true,
@@ -296,7 +296,7 @@ func Test_validateValue(t *testing.T) {
 		{
 			name: "validate wrong bool",
 			args: args{
-				c:     fp.Condition{Not: false, Values: []interface{}{"true"}, Field: "name"},
+				c:     fp.Condition{Not: false, Values: []interface{}{"true"}, Field: "firstName"},
 				field: Field{Type: fp.TypeBool, Container: fp.ContainerNone, Operators: []fp.Operator{fp.OpEqual}},
 			},
 			wantErr: true,
@@ -304,7 +304,7 @@ func Test_validateValue(t *testing.T) {
 		{
 			name: "validate correct bool",
 			args: args{
-				c:     fp.Condition{Not: false, Values: []interface{}{true}, Field: "name"},
+				c:     fp.Condition{Not: false, Values: []interface{}{true}, Field: "firstName"},
 				field: Field{Type: fp.TypeBool, Container: fp.ContainerNone, Operators: []fp.Operator{fp.OpEqual}},
 			},
 			wantErr: false,
@@ -312,7 +312,7 @@ func Test_validateValue(t *testing.T) {
 		{
 			name: "validate float",
 			args: args{
-				c:     fp.Condition{Not: false, Values: []interface{}{1.2}, Field: "name"},
+				c:     fp.Condition{Not: false, Values: []interface{}{1.2}, Field: "firstName"},
 				field: Field{Type: fp.TypeFloat, Container: fp.ContainerNone, Operators: []fp.Operator{fp.OpEqual}},
 			},
 			wantErr: false,
@@ -320,7 +320,7 @@ func Test_validateValue(t *testing.T) {
 		{
 			name: "validate wrong timestamp",
 			args: args{
-				c:     fp.Condition{Not: false, Values: []interface{}{1.2}, Field: "name"},
+				c:     fp.Condition{Not: false, Values: []interface{}{1.2}, Field: "firstName"},
 				field: Field{Type: fp.TypeTimestamp, Container: fp.ContainerNone, Operators: []fp.Operator{fp.OpEqual}},
 			},
 			wantErr: true,
@@ -328,7 +328,7 @@ func Test_validateValue(t *testing.T) {
 		{
 			name: "validate correct timestamp",
 			args: args{
-				c:     fp.Condition{Not: false, Values: []interface{}{time.Now()}, Field: "name"},
+				c:     fp.Condition{Not: false, Values: []interface{}{time.Now()}, Field: "firstName"},
 				field: Field{Type: fp.TypeTimestamp, Container: fp.ContainerNone, Operators: []fp.Operator{fp.OpEqual}},
 			},
 			wantErr: false,
@@ -355,14 +355,14 @@ func Test_checkSameType(t *testing.T) {
 		{
 			name: "check difference type",
 			args: args{
-				cond: fp.Condition{Field: "name", Not: false, Op: fp.OpEqual, Values: []interface{}{1, "a"}},
+				cond: fp.Condition{Field: "firstName", Not: false, Op: fp.OpEqual, Values: []interface{}{1, "a"}},
 			},
 			wantErr: true,
 		},
 		{
 			name: "check same type",
 			args: args{
-				cond: fp.Condition{Field: "name", Not: false, Op: fp.OpEqual, Values: []interface{}{1, 2}},
+				cond: fp.Condition{Field: "firstName", Not: false, Op: fp.OpEqual, Values: []interface{}{1, 2}},
 			},
 			wantErr: false,
 		},
