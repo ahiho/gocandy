@@ -75,7 +75,7 @@ func (p PaginateRequest) getQueryParams() (offset int, pageSize int, err error) 
 	if p.PageToken == "" {
 		return pageSize, 0, nil
 	}
-	pt, e := base64.URLEncoding.DecodeString(p.PageToken)
+	pt, e := base64.RawURLEncoding.DecodeString(p.PageToken)
 	if e != nil {
 		return 0, 0, e
 	}
