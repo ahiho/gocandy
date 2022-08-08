@@ -1,5 +1,5 @@
 // Package sql_adaptor provides functions to convert a goven query to a valid and safe SQL query.
-package sql_adaptor
+package sql
 
 import (
 	"reflect"
@@ -11,12 +11,12 @@ const (
 	tagName = "filter"
 )
 
-// NewDefaultAdaptorFromStruct returns a new basic SqlAdaptor from the reflection of your database object.
-func NewDefaultAdaptorFromStruct(gorm reflect.Value) *SqlAdaptor {
+// NewDefaultAdaptorFromStruct returns a new basic SQLAdaptor from the reflection of your database object.
+func NewDefaultAdaptorFromStruct(gorm reflect.Value) *SQLAdaptor {
 	matchers := map[*regexp.Regexp]ParseValidateFunc{}
 	fieldMappings := map[string]string{}
 	defaultFields := FieldParseValidatorFromStruct(gorm)
-	return NewSqlAdaptor(fieldMappings, defaultFields, matchers)
+	return NewSQLAdaptor(fieldMappings, defaultFields, matchers)
 }
 
 // FieldParseValidatorFromStruct takes the reflection of your database object and returns a map of fieldnames to ParseValidateFuncs.

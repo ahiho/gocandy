@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/ahiho/filter/sql_adaptor"
+	"github.com/ahiho/filter/adapter/sql"
 	"gorm.io/gorm"
 )
 
@@ -17,13 +17,13 @@ type User struct {
 // UserDAO is an example DAO for user data.
 type UserDAO struct {
 	db           *gorm.DB
-	queryAdaptor *sql_adaptor.SqlAdaptor
+	queryAdaptor *sql.SQLAdaptor
 }
 
 // NewUserDAO returns a UserDAO.
 func NewUserDAO(db *gorm.DB) (*UserDAO, error) {
 	reflection := reflect.ValueOf(&User{})
-	adaptor := sql_adaptor.NewDefaultAdaptorFromStruct(reflection)
+	adaptor := sql.NewDefaultAdaptorFromStruct(reflection)
 	return &UserDAO{
 		db:           db,
 		queryAdaptor: adaptor,
@@ -51,7 +51,7 @@ func (u *UserDAO) MakeQuery(q string) ([]User, error) {
 	if err != nil {
 		return nil, err
 	}
-	query = query.Model(User{}).Where(queryResp.Raw, sql_adaptor.StringSliceToInterfaceSlice(queryResp.Values)...)
+	query = query.Model(User{}).Where(queryResp.Raw, sql.StringSliceToInterfaceSlice(queryResp.Values)...)
 	err = query.Find(&users).Error
 	if err != nil {
 		return nil, err

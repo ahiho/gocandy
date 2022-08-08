@@ -1,4 +1,4 @@
-package sql_adaptor
+package sql
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 
 // DefaultMatcherWithValidator wraps the default matcher with validation on the value.
 func DefaultMatcherWithValidator(validate ValidatorFunc, comps []string) ParseValidateFunc {
-	return func(ex *parser.Expression) (*SqlResponse, error) {
+	return func(ex *parser.Expression) (*SQLResponse, error) {
 		for _, v := range comps {
 			if v == ex.Comparator || v == "*" {
 				var err error
@@ -20,7 +20,7 @@ func DefaultMatcherWithValidator(validate ValidatorFunc, comps []string) ParseVa
 					for _, v := range values {
 						err = validate(v)
 						if err != nil {
-							return nil, errors.New("invaqlid value")
+							return nil, errors.New("invalid value")
 						}
 					}
 				} else {
@@ -28,9 +28,7 @@ func DefaultMatcherWithValidator(validate ValidatorFunc, comps []string) ParseVa
 					if err != nil {
 						return nil, errors.New("invalid value")
 					}
-
 				}
-
 				return DefaultMatcher(ex), nil
 			}
 		}
@@ -39,10 +37,10 @@ func DefaultMatcherWithValidator(validate ValidatorFunc, comps []string) ParseVa
 }
 
 // DefaultMatcher takes an expression and spits out the default SqlResponse.
-func DefaultMatcher(ex *parser.Expression) *SqlResponse {
+func DefaultMatcher(ex *parser.Expression) *SQLResponse {
 	if ex.Comparator == parser.TokenLookup[parser.PERCENT] {
 		fmtValue := fmt.Sprintf("%%%s%%", ex.Value)
-		sq := SqlResponse{
+		sq := SQLResponse{
 			Raw:    fmt.Sprintf("%s LIKE ?", ex.Field),
 			Values: []string{fmtValue},
 		}
@@ -52,13 +50,13 @@ func DefaultMatcher(ex *parser.Expression) *SqlResponse {
 		values := strings.Split(strings.TrimLeft(strings.TrimRight(ex.Value, ")"), "("), ",")
 		raw := fmt.Sprintf("(%s%s)", strings.Repeat("?, ", len(values)-1), "?")
 
-		sq := SqlResponse{
+		sq := SQLResponse{
 			Raw:    fmt.Sprintf("%s IN %s", ex.Field, raw),
 			Values: values,
 		}
 		return &sq
 	}
-	sq := SqlResponse{
+	sq := SQLResponse{
 		Raw:    fmt.Sprintf("%s%s?", ex.Field, ex.Comparator),
 		Values: []string{ex.Value},
 	}
@@ -87,5 +85,3 @@ func NumericValidator(s string) error {
 	}
 	return nil
 }
-
-

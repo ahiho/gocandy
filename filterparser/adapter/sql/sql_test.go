@@ -1,4 +1,4 @@
-package sql_adaptor_test
+package sql
 
 import (
 	"database/sql"
@@ -6,8 +6,6 @@ import (
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/ahiho/filter/sql_adaptor"
 
 	. "github.com/onsi/gomega"
 )
@@ -18,27 +16,21 @@ type TestCase struct {
 	expectedValues []string
 }
 
-// Typical gorm database struct - a User
-type ExampleDBStruct struct {
-	ID           uint
-	Name         string  `filter:"=;>;%;#"`
-	Email        *string `filter:"=;>"`
-	Age          uint8   `filter:"=;>;#"`
-	Birthday     *time.Time
-	MemberNumber sql.NullString
-	ActivatedAt  sql.NullTime
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-}
-
 func TestSqlAdaptor(t *testing.T) {
 	g := NewGomegaWithT(t)
 	t.Run("test sql adaptor success", func(t *testing.T) {
+		type ExampleDBStruct struct {
+			Identity uint    `filter:"%"`
+			Name     string  `filter:"*"`
+			Email    *string `filter:"#;="`
+			Age      uint8   `filter:"=;>;"`
+		}
 		testCases := []TestCase{
+			// Test * rule
 			{
-				test:           "(name=max AND email=bob-dylan@aol.com) OR age#\"(1,2,3)\"",
-				expectedRaw:    "((name=? AND email=?) OR age IN (?, ?, ?))",
-				expectedValues: []string{"max", "bob-dylan@aol.com", "1", "2", "3"},
+				test:           `(name=duckhue01 AND name%duckhue) OR name#"(duckhue01,duckhue02)"`,
+				expectedRaw:    "((name=? AND name LIKE ?) OR name IN (?, ?))",
+				expectedValues: []string{"duckhue01", "%duckhue%", "duckhue01", "duckhue02"},
 			},
 			// Test for an empty quoted string.
 			{
@@ -46,14 +38,21 @@ func TestSqlAdaptor(t *testing.T) {
 				expectedRaw:    "((name=? AND email=?) OR age>?)",
 				expectedValues: []string{"", "bob-dylan@aol.com", "1"},
 			},
+			// Test % rule
 			{
-				test:           "(name%max AND email=bob-dylan@aol.com) OR age > 1",
-				expectedRaw:    "((name LIKE ? AND email=?) OR age>?)",
-				expectedValues: []string{"%max%", "bob-dylan@aol.com", "1"},
+				test:           `identity%1`,
+				expectedRaw:    "identity LIKE ?",
+				expectedValues: []string{"%1%"},
+			},
+			// Test # rule
+			{
+				test:           "email#duckhue",
+				expectedRaw:    "email IN (?)",
+				expectedValues: []string{"duckhue"},
 			},
 		}
 		for _, testCase := range testCases {
-			sa := sql_adaptor.NewDefaultAdaptorFromStruct(reflect.ValueOf(&ExampleDBStruct{}))
+			sa := NewDefaultAdaptorFromStruct(reflect.ValueOf(&ExampleDBStruct{}))
 			response, err := sa.Parse(testCase.test)
 			g.Expect(err).To(BeNil(), fmt.Sprintf("failed case: %s", testCase.test))
 			g.Expect(response.Raw).To(Equal(testCase.expectedRaw), fmt.Sprintf("failed case raw: %s", testCase.test))
@@ -61,6 +60,17 @@ func TestSqlAdaptor(t *testing.T) {
 		}
 	})
 	t.Run("test sql adaptor failure", func(t *testing.T) {
+		type ExampleDBStruct struct {
+			ID           uint
+			Name         string  `filter:"=;>;%;#"`
+			Email        *string `filter:"=;>"`
+			Age          uint8   `filter:"=;>;#"`
+			Birthday     *time.Time
+			MemberNumber sql.NullString
+			ActivatedAt  sql.NullTime
+			CreatedAt    time.Time
+			UpdatedAt    time.Time
+		}
 		testCases := []TestCase{
 			{
 				test: "(name=max AND invalidField=wow) OR age > 1",
@@ -82,30 +92,38 @@ func TestSqlAdaptor(t *testing.T) {
 			},
 		}
 		for _, testCase := range testCases {
-			sa := sql_adaptor.NewDefaultAdaptorFromStruct(reflect.ValueOf(&ExampleDBStruct{}))
+			sa := NewDefaultAdaptorFromStruct(reflect.ValueOf(&ExampleDBStruct{}))
 			_, err := sa.Parse(testCase.test)
 			g.Expect(err).ToNot(BeNil(), fmt.Sprintf("failed case: %s", testCase.test))
 		}
 	})
 	t.Run("test FieldParseValidatorFromStruct", func(t *testing.T) {
-		defaultFields := sql_adaptor.FieldParseValidatorFromStruct(reflect.ValueOf(&ExampleDBStruct{}))
-		_, ok := defaultFields["membernumber"]
+		type ExampleDBStruct struct {
+			ID    uint
+			Name  string  `filter:"=;>;%;#"`
+			Email *string `filter:"=;>"`
+			Age   uint8   `filter:"=;>;#"`
+		}
+		defaultFields := FieldParseValidatorFromStruct(reflect.ValueOf(&ExampleDBStruct{}))
+		_, ok := defaultFields["name"]
 		g.Expect(ok).To(Equal(true))
-	})
-
-	t.Run("test V", func(t *testing.T) {
-
 	})
 }
 
-func FuzzSqlAdaptor(f *testing.F) {
+func FuzzSQLAdaptor(f *testing.F) {
+	type ExampleDBStruct struct {
+		ID    uint
+		Name  string  `filter:"=;>;%;#"`
+		Email *string `filter:"=;>"`
+		Age   uint8   `filter:"=;>;#"`
+	}
 	testcases := []string{"(name=max AND invalidField=wow) OR age > 1", "(name=max AND email=bob-dylan@aol.com) OR age > 1", "id = wow", "(name%max AND email=\"bob-dylan@aol.com\") OR age > 1"}
 	for _, tc := range testcases {
 		f.Add(tc)
 	}
 
 	f.Fuzz(func(t *testing.T, s string) {
-		sa := sql_adaptor.NewDefaultAdaptorFromStruct(reflect.ValueOf(&ExampleDBStruct{}))
+		sa := NewDefaultAdaptorFromStruct(reflect.ValueOf(&ExampleDBStruct{}))
 		response, err := sa.Parse(s)
 		if err != nil && response != nil {
 			t.Errorf("expected nil response when err is not nil")

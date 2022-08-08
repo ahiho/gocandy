@@ -1,4 +1,4 @@
-package sql_adaptor
+package sql
 
 import (
 	"errors"
@@ -15,17 +15,17 @@ type (
 	// ValidatorFunc takes a field name and validates that it is a legal/correct format.
 	ValidatorFunc = func(s string) error
 	// ParseValidateFunc takes an Expression from the AST and returns a templated SQL query.
-	ParseValidateFunc = func(ex *parser.Expression) (*SqlResponse, error)
+	ParseValidateFunc = func(ex *parser.Expression) (*SQLResponse, error)
 )
 
 // SqlResponse is an object that stores the raw query, and the values to interpolate.
-type SqlResponse struct {
+type SQLResponse struct {
 	Raw    string
 	Values []string
 }
 
-// SqlAdaptor represents the adaptor tailored to your database schema.
-type SqlAdaptor struct {
+// SQLAdaptor represents the adaptor tailored to your database schema.
+type SQLAdaptor struct {
 	// fieldMappings (currently unimplemented) is used to provide ability to map different frontend to backend field names.
 	fieldMappings map[string]string
 	// defaultFields is the default field matcher, used when a regex isn't matched.
@@ -34,8 +34,8 @@ type SqlAdaptor struct {
 	matchers map[*regexp.Regexp]ParseValidateFunc
 }
 
-// NewSqlAdaptor returns a SqlAdaptor populated with the provided arguments.
-func NewSqlAdaptor(fieldMappings map[string]string, defaultFields map[string]ParseValidateFunc, matchers map[*regexp.Regexp]ParseValidateFunc) *SqlAdaptor {
+// NewSQLAdaptor returns a SQLAdaptor populated with the provided arguments.
+func NewSQLAdaptor(fieldMappings map[string]string, defaultFields map[string]ParseValidateFunc, matchers map[*regexp.Regexp]ParseValidateFunc) *SQLAdaptor {
 	if fieldMappings == nil {
 		fieldMappings = map[string]string{}
 	}
@@ -45,7 +45,7 @@ func NewSqlAdaptor(fieldMappings map[string]string, defaultFields map[string]Par
 	if matchers == nil {
 		matchers = map[*regexp.Regexp]ParseValidateFunc{}
 	}
-	sa := SqlAdaptor{
+	sa := SQLAdaptor{
 		fieldMappings: fieldMappings,
 		defaultFields: defaultFields,
 		matchers:      matchers,
@@ -54,7 +54,7 @@ func NewSqlAdaptor(fieldMappings map[string]string, defaultFields map[string]Par
 }
 
 // Parse takes a string goven query and returns a SqlResponse that can be executed against your database.
-func (s *SqlAdaptor) Parse(str string) (*SqlResponse, error) {
+func (s *SQLAdaptor) Parse(str string) (*SQLResponse, error) {
 	newParser := parser.NewParser(str)
 	node, err := newParser.Parse()
 	if err != nil {
@@ -63,8 +63,8 @@ func (s *SqlAdaptor) Parse(str string) (*SqlResponse, error) {
 	return s.parseNodeToSQL(node)
 }
 
-func (s *SqlAdaptor) parseNodeToSQL(node parser.Node) (*SqlResponse, error) {
-	sq := SqlResponse{}
+func (s *SQLAdaptor) parseNodeToSQL(node parser.Node) (*SQLResponse, error) {
+	sq := SQLResponse{}
 	if node == nil {
 		return &sq, nil
 	}
@@ -99,7 +99,7 @@ func (s *SqlAdaptor) parseNodeToSQL(node parser.Node) (*SqlResponse, error) {
 	}
 	// Don't want to have unwanted whitespace if no gate.
 	if op.Gate == "" {
-		sq = SqlResponse{
+		sq = SQLResponse{
 			Raw:    fmt.Sprintf("(%s)", left.Raw),
 			Values: left.Values,
 		}
@@ -109,7 +109,7 @@ func (s *SqlAdaptor) parseNodeToSQL(node parser.Node) (*SqlResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	sq = SqlResponse{
+	sq = SQLResponse{
 		Raw:    fmt.Sprintf("(%s %s %s)", left.Raw, op.Gate, right.Raw),
 		Values: append(left.Values, right.Values...),
 	}
@@ -122,5 +122,6 @@ func StringSliceToInterfaceSlice(slice []string) []interface{} {
 	for _, val := range slice {
 		interSlice = append(interSlice, val)
 	}
+
 	return interSlice
 }
