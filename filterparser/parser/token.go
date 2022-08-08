@@ -26,7 +26,7 @@ var TokenLookup = map[Token]string{
 	OPEN_BRACKET:        "(",
 	CLOSED_BRACKET:      ")",
 	PERCENT:             "%",
-	HASH:                  "#",
+	HASH:                "#",
 }
 
 // String prints a human readable string name for a given token.

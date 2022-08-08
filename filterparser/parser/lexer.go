@@ -1,4 +1,8 @@
-// Package parser contains the definitions of the base tokens, the lexer that converts a query to a token stream, and the parser that converts a token stream into an AST.
+/*
+Package parser contains the definitions of the base tokens,
+the lexer that converts a query to a token stream,
+and the parser that converts a token stream into an AST.
+*/
 package parser
 
 import (
@@ -178,7 +182,9 @@ func isTokenGate(tok Token) bool {
 }
 
 func isTokenComparator(tok Token) bool {
-	return tok == GREATER_THAN || tok == GREATHER_THAN_EQUAL || tok == LESS_THAN || tok == LESS_THAN_EQUAL || tok == EQUAL || tok == NOT_EQUAL || tok == HASH || tok == PERCENT
+	return tok == GREATER_THAN || tok == GREATHER_THAN_EQUAL ||
+		tok == LESS_THAN || tok == LESS_THAN_EQUAL ||
+		tok == EQUAL || tok == NOT_EQUAL || tok == HASH || tok == PERCENT
 }
 
 // eof represents a marker rune for the end of the reader.
