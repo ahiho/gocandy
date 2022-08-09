@@ -1,4 +1,4 @@
-module github.com/ahiho/filter
+module github.com/ahiho/gocandy/filter
 
 go 1.18
 

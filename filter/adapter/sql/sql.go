@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ahiho/filter/parser"
+	"github.com/ahiho/gocandy/filter/parser"
 
 	"github.com/iancoleman/strcase"
 )
