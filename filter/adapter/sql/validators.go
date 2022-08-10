@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ahiho/filter/parser"
+	"github.com/ahiho/gocandy/filter/parser"
 )
 
 // DefaultMatcherWithValidator wraps the default matcher with validation on the value.

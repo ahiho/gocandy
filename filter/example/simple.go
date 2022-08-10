@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/ahiho/filter/adapter/sql"
+	"github.com/ahiho/gocandy/filter/adapter/sql"
 	"gorm.io/gorm"
 )
 
