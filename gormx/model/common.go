@@ -7,9 +7,9 @@ import (
 )
 
 type Common struct {
-	ID         int64     `gorm:"primaryKey;autoIncrement:false"`
-	CreateTime time.Time `gorm:"index;autoCreateTime:nano;type:DATETIME(6) DEFAULT NOW(6)"`
-	UpdateTime time.Time `gorm:"index;autoUpdateTime:nano;type:DATETIME(6) DEFAULT NOW(6) ON UPDATE NOW(6)"`
+	ID         int64     `gorm:"primaryKey;autoIncrement:false" filter:"#"`
+	CreateTime time.Time `gorm:"index;autoCreateTime:nano;type:DATETIME(6) DEFAULT NOW(6)" filter:">=;>;<=;<"`
+	UpdateTime time.Time `gorm:"index;autoUpdateTime:nano;type:DATETIME(6) DEFAULT NOW(6) ON UPDATE NOW(6)" filter:">=;>;<=;<"`
 }
 
 type SoftDelete struct {
