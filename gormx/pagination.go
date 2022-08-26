@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	filter "github.com/ahiho/gocandy/filter/adapter/sql"
 	"gorm.io/gorm"
 )
 
@@ -16,6 +17,8 @@ type PaginateRequest struct {
 	// For now we only support offset
 	// Example: offset:100 (b2Zmc2V0OjEwMA)
 	PageToken string
+	Filter    string
+	Adaptor   *filter.SQLAdaptor
 }
 
 const (
@@ -36,7 +39,7 @@ func Paginate[T any](db *gorm.DB, pr PaginateRequest) ([]T, string, error) {
 	}
 
 	rs := []T{}
-	tx := db.Offset(offset).Limit(pageSize).Find(&rs)
+	tx := Filter(db, pr.Filter, pr.Adaptor).Offset(offset).Limit(pageSize).Find(&rs)
 	if tx.Error != nil {
 		return nil, empty, tx.Error
 	}
@@ -50,7 +53,7 @@ func PaginateTransform[T any, R any](db *gorm.DB, pr PaginateRequest, fn func(i 
 	}
 
 	rs := []T{}
-	tx := db.Offset(offset).Limit(pageSize).Find(&rs)
+	tx := Filter(db, pr.Filter, pr.Adaptor).Offset(offset).Limit(pageSize).Find(&rs)
 	if tx.Error != nil {
 		return nil, empty, tx.Error
 	}
