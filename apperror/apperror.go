@@ -26,14 +26,6 @@ type Err struct {
 	InnerError error  `json:"-"`
 }
 
-type AppError interface {
-	Error() string
-	StatusCode() codes.Code
-	StackTrace() string
-	ToJSON() string
-	Inner() error
-}
-
 type appError struct {
 	Status   codes.Code
 	Code     string
@@ -119,7 +111,7 @@ func BadRequestWithCodeE(code string, msg string, err error) error {
 	return makeError(codes.InvalidArgument, code, msg, err)
 }
 
-func InternalError(err error) AppError {
+func InternalError(err error) error {
 	msg := ""
 	if err == nil {
 		msg = "Undefined error"

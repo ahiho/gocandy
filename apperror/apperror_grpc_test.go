@@ -49,7 +49,7 @@ func TestMessageForGrpcStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MessageForGrpcStatus(tt.err); got != tt.want {
+			if got := MessageForGrpcStatus(tt.err); string(got) != tt.want {
 				t.Errorf("MessageForGrpcStatus() = %v, want %v", got, tt.want)
 			}
 		})

@@ -2,8 +2,8 @@ package apperror
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -18,22 +18,33 @@ var (
 	AllowedHTTPErrorStatuses = []int{400, 401, 403, 404}
 )
 
-func MessageForGrpcStatus(err *status.Status) string {
+type errorStruct struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+func MessageForGrpcStatus(err *status.Status) []byte {
 	code := err.Code()
 	msg := err.Message()
+
+	e := errorStruct{
+		Message: msg,
+	}
 	// nolint: exhaustive // We don't care other status.
 	switch code {
 	case codes.InvalidArgument:
-		return fmt.Sprintf(`{"code":"ERR_BAD_REQUEST","message":"%v"}`, msg)
+		e.Code = ErrBadRequest
 	case codes.Unauthenticated:
-		return fmt.Sprintf(`{"code":"ERR_UNAUTHORIZED","message":"%v"}`, msg)
+		e.Code = ErrUnauthorized
 	case codes.PermissionDenied:
-		return fmt.Sprintf(`{"code":"ERR_FORBIDDEN","message":"%v"}`, msg)
+		e.Code = ErrForbidden
 	case codes.NotFound:
-		return fmt.Sprintf(`{"code":"ERR_NOTFOUND","message":"%v"}`, msg)
+		e.Code = ErrNotFound
 	default:
-		return fmt.Sprintf(`{"code":"ERR_INTERNAL","message":"%v"}`, msg)
+		e.Code = ErrInternal
 	}
+	b, _ := json.Marshal(e)
+	return b
 }
 
 func WrapGrpcError(
@@ -46,7 +57,7 @@ func WrapGrpcError(
 	if err == nil {
 		return resp, nil
 	}
-	var msg AppError
+	msg := &appError{}
 	ok := errors.As(err, &msg)
 	if ok {
 		_ = grpc.SetHeader(ctx, metadata.Pairs(errorNormalizedFlag, "OK"))
@@ -72,7 +83,7 @@ func FormatRestError(ctx context.Context, sm *runtime.ServeMux, m runtime.Marsha
 	if len(md.HeaderMD[errorNormalizedFlag]) > 0 {
 		bytes = []byte(grpcErr.Message())
 	} else {
-		bytes = []byte(MessageForGrpcStatus(grpcErr))
+		bytes = MessageForGrpcStatus(grpcErr)
 	}
 	_, _ = w.Write(bytes)
 }

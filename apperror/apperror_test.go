@@ -504,7 +504,7 @@ func TestInternalError(t *testing.T) {
 	tests := []struct {
 		name string
 		err  error
-		want AppError
+		want *appError
 	}{
 		{
 			name: "internal err",
