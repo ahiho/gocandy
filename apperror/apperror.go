@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+	"sync/atomic"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 )
 
 // based on github/pkg/errors and grpc
+var (
+	EnableStackTrace atomic.Bool
+)
 
 const (
 	ErrBadRequest   = "ERR_BAD_REQUEST"
@@ -20,10 +24,10 @@ const (
 )
 
 type Err struct {
-	Code       string `json:"code"`
-	Message    string `json:"message"`
-	StackTrace string `json:"stack_trace,omitempty"`
-	InnerError error  `json:"-"`
+	Code       string   `json:"code"`
+	Message    string   `json:"message"`
+	StackTrace []string `json:"stack_trace,omitempty"`
+	InnerError error    `json:"-"`
 }
 
 type appError struct {
@@ -38,11 +42,18 @@ func (e *appError) Error() string {
 	return fmt.Sprintf("apperror:code=%v;msg=%v", e.Code, e.Message)
 }
 
-func (e *appError) StackTrace() string {
-	if len(e.Stack) == 0 {
-		return ""
+func (e *appError) StackTrace() []string {
+	if !EnableStackTrace.Load() {
+		return nil
 	}
-	return fmt.Sprintf("%+v", e.Stack)
+	if len(e.Stack) == 0 {
+		return nil
+	}
+	st := make([]string, len(e.Stack))
+	for i, s := range e.Stack {
+		st[i] = fmt.Sprintf("%+v", s)
+	}
+	return st
 }
 
 func (e *appError) StatusCode() codes.Code {

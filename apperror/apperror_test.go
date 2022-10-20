@@ -55,13 +55,15 @@ func Test_appError_StackTrace(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   string
+		want   []string
 	}{
 		{
 			name:   "OK",
 			fields: fields{},
 		},
 	}
+	EnableStackTrace.Store(true)
+	defer EnableStackTrace.Store(false)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := &appError{
@@ -70,7 +72,7 @@ func Test_appError_StackTrace(t *testing.T) {
 				Message:  tt.fields.Message,
 				InnerErr: tt.fields.InnerErr,
 			}
-			if got := e.StackTrace(); got != tt.want {
+			if got := e.StackTrace(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("appError.StackTrace() = %v, want %v", got, tt.want)
 			}
 		})
