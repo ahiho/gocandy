@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	firebase.google.com/go/v4 v4.8.0
-	github.com/ahiho/gocandy/utils v0.0.0-20220923081456-654036319d64
+	github.com/ahiho/gocandy/utils v0.0.0-20220923082804-03401ab867fb
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	google.golang.org/api v0.97.0
