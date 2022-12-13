@@ -2,15 +2,20 @@ package session
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"sync"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/metadata"
 )
 
 var (
-	defaultStore Store
+	defaultStore  Store
+	identifierKey = "x-request-id"
 )
+
+func UseIdentifierHeader(k string) {
+	identifierKey = k
+}
 
 type Store interface {
 	Get(ctx context.Context) Session
@@ -69,7 +74,7 @@ type storeImpl struct {
 }
 
 func (st *storeImpl) Get(ctx context.Context) Session {
-	id := metautils.ExtractIncoming(ctx).Get("x-request-id")
+	id := metadata.ExtractIncoming(ctx).Get(identifierKey)
 	if id == "" {
 		return nil
 	}
@@ -80,7 +85,7 @@ func (st *storeImpl) Get(ctx context.Context) Session {
 }
 
 func (st *storeImpl) Delete(ctx context.Context) {
-	id := metautils.ExtractIncoming(ctx).Get("x-request-id")
+	id := metadata.ExtractIncoming(ctx).Get(identifierKey)
 	if id == "" {
 		return
 	}
@@ -90,9 +95,9 @@ func (st *storeImpl) Delete(ctx context.Context) {
 }
 
 func (st *storeImpl) New(ctx context.Context) (Session, error) {
-	id := metautils.ExtractIncoming(ctx).Get("x-request-id")
+	id := metadata.ExtractIncoming(ctx).Get(identifierKey)
 	if id == "" {
-		return nil, errors.New("x-request-id is missed")
+		return nil, fmt.Errorf("%v is missed", identifierKey)
 	}
 	st.mu.Lock()
 	defer st.mu.Unlock()

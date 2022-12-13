@@ -2,6 +2,9 @@ module github.com/ahiho/gocandy/session
 
 go 1.19
 
-require github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
+require github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.0-rc.3
 
-require google.golang.org/grpc v1.29.1 // indirect
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	google.golang.org/grpc v1.37.0 // indirect
+)
