@@ -6,7 +6,14 @@ import (
 	"sync"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/metadata"
+	"github.com/rs/xid"
+
+	grpcmetadata "google.golang.org/grpc/metadata"
 )
+
+func init() {
+	UseDefaultStore(NewStore())
+}
 
 var (
 	defaultStore  Store
@@ -112,4 +119,16 @@ func UseDefaultStore(store Store) {
 
 func Of(ctx context.Context) Session {
 	return defaultStore.Get(ctx)
+}
+
+func NewTestCtx(kv map[string]interface{}) context.Context {
+	ssId := xid.New().String()
+	ctx := grpcmetadata.NewIncomingContext(context.Background(), grpcmetadata.Pairs(identifierKey, ssId))
+	ss, _ := defaultStore.New(ctx)
+	if len(kv) > 0 {
+		for k, v := range kv {
+			ss.Set(k, v)
+		}
+	}
+	return ctx
 }
