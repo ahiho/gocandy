@@ -1,6 +1,8 @@
+// Lexer tokens
+
 package parser
 
-// Token represents a lexical token.
+// Token is the type of a single token.
 type Token int
 
 // TokenInfo stores relevant information about the token during scanning.
@@ -9,57 +11,79 @@ type TokenInfo struct {
 	Literal string
 }
 
-// TokenLookup is a map, useful for printing readable names of the tokens.
-var TokenLookup = map[Token]string{
-	OTHER:               "OTHER",
-	EOF:                 "EOF",
-	WS:                  "WS",
-	STRING:              "STRING",
-	EQUAL:               "EQUAL",
-	GREATER_THAN:        "GREATER THAN",
-	GREATHER_THAN_EQUAL: "GREATER THAN OR EQUAL",
-	LESS_THAN:           "LESS THAN",
-	LESS_THAN_EQUAL:     "LESS THAN OR EQUAL",
-	NOT_EQUAL:           "NOT EQUAL",
-	AND:                 "AND",
-	OR:                  "OR",
-	OPEN_BRACKET:        "(",
-	CLOSED_BRACKET:      ")",
-	PERCENT:             "%",
-	HASH:                "#",
-}
-
-// String prints a human readable string name for a given token.
-func (t Token) String() (print string) {
-	return TokenLookup[t]
-}
-
-// Declare the tokens here.
 const (
-	// Special tokens
-	// Iota simply starts and integer count
-	OTHER Token = iota
+	ILLEGAL Token = iota
 	EOF
+	APPEND
+	ASSIGN
+	COMMA
+	EQUAL
+	GTE
+	GREATER
+	LESS
+	LPAREN
+	LTE
+	NOT
+	NOT_EQUALS
+	OR
+	AND
+	IN
+	LIKE
+	RPAREN
+	EQUALS
 	WS
+	HASH
 
-	// Main literals
+	NAME
+	NUMBER
 	STRING
+	REGEX
 
 	// Brackets
 	OPEN_BRACKET
 	CLOSED_BRACKET
-
-	// Special characters
-	GREATER_THAN
-	GREATHER_THAN_EQUAL
-	LESS_THAN
-	LESS_THAN_EQUAL
-	EQUAL
-	NOT_EQUAL
-	PERCENT
-	HASH
-
-	// Keywords
-	AND
-	OR
 )
+
+var keywordTokens = map[string]Token{}
+
+// KeywordToken returns the token associated with the given keyword
+// string, or ILLEGAL if given name is not a keyword.
+func KeywordToken(name string) Token {
+	return keywordTokens[name]
+}
+
+var TokenNames = map[Token]string{
+	ILLEGAL: "<illegal>",
+	EOF:     "EOF",
+
+	WS:         "WS",
+	ASSIGN:     "=",
+	COMMA:      ",",
+	GTE:        ">=",
+	GREATER:    ">",
+	LESS:       "<",
+	LPAREN:     "(",
+	LTE:        "<=",
+	NOT:        "!",
+	NOT_EQUALS: "!=",
+	EQUAL:      "!=",
+	RPAREN:     ")",
+	EQUALS:     "==",
+	LIKE:       "LIKE",
+	AND:        "AND",
+	OR:         "OR",
+	IN:         "IN",
+
+	NAME:   "name",
+	NUMBER: "number",
+	STRING: "string",
+	REGEX:  "regex",
+
+	OPEN_BRACKET:   "(",
+	CLOSED_BRACKET: ")",
+}
+
+// String returns the string name of this token.
+func (t Token) String() string {
+	return TokenNames[t]
+}

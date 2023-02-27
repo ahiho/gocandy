@@ -38,7 +38,7 @@ func DefaultMatcherWithValidator(validate ValidatorFunc, comps []string) ParseVa
 
 // DefaultMatcher takes an expression and spits out the default SqlResponse.
 func DefaultMatcher(ex *parser.Expression) *SQLResponse {
-	if ex.Comparator == parser.TokenLookup[parser.PERCENT] {
+	if ex.Comparator == parser.TokenNames[parser.LIKE] {
 		fmtValue := fmt.Sprintf("%%%s%%", ex.Value)
 		sq := SQLResponse{
 			Raw:    fmt.Sprintf("%s LIKE ?", ex.Field),
@@ -46,7 +46,7 @@ func DefaultMatcher(ex *parser.Expression) *SQLResponse {
 		}
 		return &sq
 	}
-	if ex.Comparator == parser.TokenLookup[parser.HASH] {
+	if ex.Comparator == parser.TokenNames[parser.HASH] {
 		values := strings.Split(strings.TrimLeft(strings.TrimRight(ex.Value, ")"), "("), ",")
 		raw := fmt.Sprintf("(%s%s)", strings.Repeat("?, ", len(values)-1), "?")
 

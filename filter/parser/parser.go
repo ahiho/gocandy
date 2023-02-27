@@ -2,21 +2,20 @@ package parser
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 )
 
 // Parser represents a parser, including a scanner and the underlying raw input.
 // It also contains a small buffer to allow for two unscans.
 type Parser struct {
-	s   *Lexer
-	raw string
-	buf TokenStack
+	s        *Lexer
+	raw      string
+	literals []string
+	groups   [][]string
 }
 
 // NewParser returns a new instance of Parser.
 func NewParser(s string) *Parser {
-	return &Parser{s: NewLexer(strings.NewReader(s)), raw: s}
+	return &Parser{s: NewLexer([]byte(s)), raw: s}
 }
 
 // Parse takes the raw string and returns the root node of the AST.
@@ -49,161 +48,86 @@ func (p *Parser) parseOperation() (Node, error) {
 		Gate:      "",
 		RightNode: nil,
 	}
-	tok, lit := p.scanIgnoreWhitespace()
-	for tok != EOF {
-		switch {
-		// If we hit an open bracket then we parse the operation contained in the brackets.
-		case tok == OPEN_BRACKET:
-			node, err := p.parseOperation()
-			if err != nil {
-				return nil, err
-			}
-			// Assign the operation to left node if we haven't already.
-			if op.LeftNode == nil {
-				op.LeftNode = node
-				break
-			}
-			if op.Gate == "" {
-				return nil, errors.New("shouldn't find operation before Gate if left node already exists")
-			}
-			// Assign to right otherwise.
-			if op.RightNode == nil {
-				op.RightNode = node
-				tempOp := &Operation{
-					LeftNode:  op,
-					Gate:      "",
-					RightNode: nil,
-				}
-				op = tempOp
-				break
-			}
-		case tok == STRING:
-			if (op.LeftNode != nil && op.Gate == "") || (op.LeftNode != nil && op.RightNode != nil) {
-				return nil, errors.New("didn't expect an expression here")
-			}
-			p.unscan(TokenInfo{
-				Token:   tok,
-				Literal: lit,
-			})
-			expr, err := p.parseExpression()
-			if err != nil {
-				return nil, err
-			}
-			if op.LeftNode == nil {
-				op.LeftNode = expr
-				break
-			}
-			if op.RightNode == nil {
-				op.RightNode = expr
-				tempOp := &Operation{
-					LeftNode:  op,
-					Gate:      "",
-					RightNode: nil,
-				}
-				op = tempOp
-				break
-			}
-			return nil, errors.New("parsed expression, left and right node shouldn't have both been populated")
-		case tok == CLOSED_BRACKET:
-			if op.LeftNode == nil {
-				return nil, errors.New("can't close a bracket when we have parsed nothing for the left node")
-			}
-			return op, nil
-		case isTokenGate(tok):
-			if op.Gate != "" {
-				return nil, errors.New("already found a Gate")
-			}
-			op.Gate = lit
-		default:
-			return nil, fmt.Errorf("unexpected token %v", tok)
-		}
-		tok, lit = p.scanIgnoreWhitespace()
-	}
+
 	return op, nil
 }
 
-func (p *Parser) parseExpression() (Node, error) {
-	exp := &Expression{
-		Field:      "",
-		Comparator: "",
-		Value:      "",
+func (p *Parser) ParserHelper() {
+	for {
+		_, token, val := p.s.Scan()
+		if IsTokenComparator(token.String()) && token.String() != val {
+			p.literals = append(p.literals, token.String())
+		}
+		p.literals = append(p.literals, val)
+		if token == EOF {
+			return
+		}
 	}
+}
 
-	isValueEmpty := false
-	// This code relies on being Field -> Comparator -> Value in order.
-	tok, lit := p.scan()
-	for tok != EOF {
-		switch {
-		// Open bracket means we found an operation that needs parsing.
-		case tok == OPEN_BRACKET:
-			return p.parseOperation()
-		// Ignore whitespace unless we have completed the expression.
-		case tok == WS:
-			if exp.Field != "" && exp.Comparator != "" && (exp.Value != "" || isValueEmpty) {
-				// Got to the end of the expression so quit
-				return exp, nil
+func (p *Parser) ParserToGroups() {
+	literals := p.literals
+	group := []string{}
+	count := 0
+	for i, lit := range literals {
+		group = append(group, lit)
+		if lit == OPEN_BRACKET.String() {
+			count += 1
+		}
+		if lit == CLOSED_BRACKET.String() {
+			count -= 1
+			if count == 0 {
+				p.groups = append(p.groups, group)
+				group = []string{}
 			}
-		// Looking for the Field name.
-		case exp.Field == "":
-			if tok != STRING {
-				return nil, fmt.Errorf("expected Field, got %v", tok)
-			}
-			exp.Field = lit
-		// Looking for the Comparator.
-		case exp.Comparator == "":
-			if !isTokenComparator(tok) {
-				return nil, fmt.Errorf("expected Comparator, got %v", tok)
-			}
-			exp.Comparator = lit
-		// Looking for the Value
-		case exp.Value == "":
-			if tok != STRING {
-				// If we didn't have an empty string in the value field - return an error.
-				if isValueEmpty {
-					break
+		}
+		if i == len(literals)-1 {
+			p.groups = append(p.groups, group)
+		}
+	}
+}
+
+func (p *Parser) ParserToSQL() (query string, values []string) {
+	isWhereIn := false
+	var valueIn string
+	for _, group := range p.groups {
+		for key, val := range group {
+			if key > 0 && val != COMMA.String() && group[key-1] != OPEN_BRACKET.String() && group[key-1] != CLOSED_BRACKET.String() && IsTokenComparator(group[key-1]) {
+				if val != "" {
+					if key < len(group)-1 && group[key+1] == CLOSED_BRACKET.String() {
+						query = query + "?"
+					} else {
+						query = query + "? "
+					}
+					values = append(values, val)
+				}
+			} else if val == IN.String() {
+				query = query + val
+				isWhereIn = true
+			} else if isWhereIn {
+				if val != OPEN_BRACKET.String() && val != CLOSED_BRACKET.String() && val != "" {
+					if val != COMMA.String() {
+						valueIn = valueIn + " " + val
+					} else {
+						values = append(values, valueIn)
+						valueIn = ""
+						query = query + "?,"
+					}
+				} else if val == CLOSED_BRACKET.String() {
+					isWhereIn = false
+					values = append(values, valueIn)
+					query = query + "?" + val + " "
 				} else {
-					return nil, fmt.Errorf("expected Value, got %v", tok)
+					query = query + val
+				}
+			} else {
+				if (key < len(group)-1 && group[key+1] == CLOSED_BRACKET.String()) || val == OPEN_BRACKET.String() {
+					query = query + val
+				} else if val != "" {
+					query = query + val + " "
 				}
 			}
-			if lit == "" {
-				isValueEmpty = true
-			}
-			exp.Value = lit
 		}
-		tok, lit = p.scan()
 	}
-	if exp.Field != "" && exp.Comparator == "" {
-		return nil, errors.New("found no comparator when expected")
-	}
-	return exp, nil
-}
-
-// scan returns the next token from the underlying scanner.
-// If a token has been unscanned then read that instead.
-func (p *Parser) scan() (tok Token, lit string) {
-	// If we have a token on the buffer, then return it.
-	if p.buf.Len() != 0 {
-		// Can ignore the error since it's not empty.
-		tokenInf, _ := p.buf.Pop()
-		return tokenInf.Token, tokenInf.Literal
-	}
-
-	// Otherwise read the next token from the scanner.
-	tokenInf := p.s.Scan()
-	tok, lit = tokenInf.Token, tokenInf.Literal
-	return tok, lit
-}
-
-// scanIgnoreWhitespace scans the next non-whitespace token.
-func (p *Parser) scanIgnoreWhitespace() (tok Token, lit string) {
-	tok, lit = p.scan()
-	if tok == WS {
-		tok, lit = p.scan()
-	}
-	return tok, lit
-}
-
-// unscan pushes the previously read tokens back onto the buffer.
-func (p *Parser) unscan(tok TokenInfo) {
-	p.buf.Push(tok)
+	return
 }
