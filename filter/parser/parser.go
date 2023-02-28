@@ -100,6 +100,9 @@ func (p *Parser) ParserToSQL() (query string, values []string) {
 						query = query + "? "
 					}
 					values = append(values, val)
+				} else if key > 0 && IsTokenComparator(group[key-1]) && group[key-1] != COMMA.String() {
+					query = query + "?"
+					values = append(values, val)
 				}
 			} else if val == IN.String() {
 				query = query + val
@@ -112,7 +115,6 @@ func (p *Parser) ParserToSQL() (query string, values []string) {
 						} else {
 							valueIn = valueIn + " " + val
 						}
-
 					} else {
 						values = append(values, valueIn)
 						valueIn = ""

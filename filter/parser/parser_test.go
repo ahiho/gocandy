@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -39,13 +40,14 @@ func TestNewParser(t *testing.T) {
 func TestParser_Parse(t *testing.T) {
 	g := NewGomegaWithT(t)
 	t.Run("parse empty quoted string", func(t *testing.T) {
-		test := `(status LIKE home AND (status IN ("To Do", "In Progress", "Closed") AND artifact=art1)) OR metric > 0.98`
+		test := `(status LIKE home AND (status IN ("To Do", "In Progress", "Closed") AND artifact='')) OR metric > 0.98 OR metric >= 0.98 OR metric != 0.98`
 		parser := NewParser(test)
 		parser.ParserHelper()
 		parser.ParserToGroups()
 		query, values := parser.ParserToSQL()
-		queryWant := "(status LIKE ? AND (status IN(?,?,?) AND artifact = ?)) OR metric > ? "
-		valWant := []string{"home", "To Do", "In Progress", "Closed", "art1", "0.98"}
+		fmt.Println(query)
+		queryWant := "(status LIKE ? AND (status IN(?,?,?) AND artifact = ?)) OR metric > ? OR metric >= ? OR metric != ? "
+		valWant := []string{"home", "To Do", "In Progress", "Closed", "", "0.98", "0.98", "0.98"}
 		g.Expect(values).To(Equal(valWant))
 		g.Expect(query).To(Equal(queryWant))
 	})
