@@ -43,8 +43,10 @@ func TestParser_Parse(t *testing.T) {
 		parser := NewParser(test)
 		parser.ParserHelper()
 		parser.ParserToGroups()
-		query, _ := parser.ParserToSQL()
+		query, values := parser.ParserToSQL()
 		queryWant := "(status LIKE ? AND (status IN(?,?,?) AND artifact = ?)) OR metric > ? "
+		valWant := []string{"home", "To Do", "In Progress", "Closed", "art1", "0.98"}
+		g.Expect(values).To(Equal(valWant))
 		g.Expect(query).To(Equal(queryWant))
 	})
 }

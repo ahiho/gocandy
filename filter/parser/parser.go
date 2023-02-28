@@ -107,7 +107,12 @@ func (p *Parser) ParserToSQL() (query string, values []string) {
 			} else if isWhereIn {
 				if val != OPEN_BRACKET.String() && val != CLOSED_BRACKET.String() && val != "" {
 					if val != COMMA.String() {
-						valueIn = valueIn + " " + val
+						if valueIn == "" {
+							valueIn = valueIn + val
+						} else {
+							valueIn = valueIn + " " + val
+						}
+
 					} else {
 						values = append(values, valueIn)
 						valueIn = ""
