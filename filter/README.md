@@ -27,5 +27,4 @@ IN : `status IN ("To Do", "In Progress", "Closed")`
 NOT IN : `status NOT IN ("To Do", "In Progress", "Closed")`
 
 More advanced queries can be built up using bracketed expressions:
-
 `(status LIKE home AND (status IN ("To Do", "In Progress", "Closed") AND artifact='')) OR metric > 0.98 OR metric >= 0.98 OR metric != 0.98`
