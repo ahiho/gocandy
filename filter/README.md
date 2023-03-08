@@ -1,17 +1,17 @@
-### Example Model
+### Example Parser
 
 ```go
-type User struct {
-	ID   uint   `gorm:"id" filter:"=;>;>=;#;%"`
-	Name string `gorm:"name" filter:"*"`
-}
+	query := `(status LIKE home AND (status IN ("To Do", "In Progress", "Closed") AND artifact='')) OR metric > 0.98 OR metric >= 0.98 OR metric != 0.98`
+
+	parser := NewParser(test)
+	parser.ParserToArray() 
+	parser.ParserToGroups() 
+	query, values := parser.ParserToSQL()
+
+	queryResult = "(status LIKE ? AND (status IN(?,?,?) AND artifact = ?)) OR metric > ? OR metric >= ? OR metric != ? "
+	valResult = []string{"home", "To Do", "In Progress", "Closed", "", "0.98", "0.98", "0.98"}
 ```
 
-You can allow all operator by `*`
-
-### Protecting Fields
-
-fields is unsearchable by default.
 
 ## Grammar
 
@@ -19,19 +19,13 @@ Goven has a simple syntax that allows for powerful queries.
 
 Fields can be compared using the following operators:
 
-`=`, `!=`, `>=`, `<=`, `<`, `>`, `%` , `#`
+`=`, `!=`, `>=`, `<=`, `<`, `>`, `LIKE` , `IN`, `NOT IN`
 
-The `%` operator allows you to do partial string matching using LIKE.
-
-The `#` operator is IN operator followed by a combination of values disrupted by a non-spaced comma
-ex: `name#"(duckhue01,duckhue02)"`
-
-Multiple queries can be combined using `AND`, `OR`.
-
-Together this means you can build up a query like this:
-
-`model_name=iris AND version>=2.0`
+Example for : 
+LIKE : `name LIKE hh`
+IN : `status IN ("To Do", "In Progress", "Closed")`
+NOT IN : `status NOT IN ("To Do", "In Progress", "Closed")`
 
 More advanced queries can be built up using bracketed expressions:
 
-`(model_name=iris AND version>=2.0) OR artifact_type=TENSORFLOW`
+`(status LIKE home AND (status IN ("To Do", "In Progress", "Closed") AND artifact='')) OR metric > 0.98 OR metric >= 0.98 OR metric != 0.98`
