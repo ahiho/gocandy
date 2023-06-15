@@ -51,8 +51,13 @@ func (u *UserDAO) MakeQuery(pageSize int, pageToken string, filter string) ([]Us
 func (u *UserDAO) MakeQueryWithFilter(filter string) ([]User, error) {
 	var user []User
 
-	tx := gormx.Filter(u.db, filter, u.adaptor).Find(&user)
+	tx, err := gormx.Filter(u.db, filter, u.adaptor)
 
+	if err != nil {
+		return nil, err
+	}
+
+	tx = tx.Find(&user)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

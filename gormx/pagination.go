@@ -39,10 +39,16 @@ func Paginate[T any](db *gorm.DB, pr PaginateRequest) ([]T, string, error) {
 	}
 
 	rs := []T{}
-	tx := Filter(db, pr.Filter, pr.Adaptor).Offset(offset).Limit(pageSize).Find(&rs)
+	tx, err := Filter(db, pr.Filter, pr.Adaptor)
+	if err != nil {
+		return nil, empty, err
+	}
+
+	tx = tx.Offset(offset).Limit(pageSize).Find(&rs)
 	if tx.Error != nil {
 		return nil, empty, tx.Error
 	}
+
 	return rs, nextToken(offset, pageSize, len(rs)), nil
 }
 
@@ -53,10 +59,16 @@ func PaginateTransform[T any, R any](db *gorm.DB, pr PaginateRequest, fn func(i 
 	}
 
 	rs := []T{}
-	tx := Filter(db, pr.Filter, pr.Adaptor).Offset(offset).Limit(pageSize).Find(&rs)
+	tx, err := Filter(db, pr.Filter, pr.Adaptor)
+	if err != nil {
+		return nil, empty, err
+	}
+
+	tx = tx.Offset(offset).Limit(pageSize).Find(&rs)
 	if tx.Error != nil {
 		return nil, empty, tx.Error
 	}
+
 	r := []R{}
 	for _, i := range rs {
 		o, e := fn(i)
